@@ -1,0 +1,69 @@
+import { useContext, useEffect, useState } from "react"
+import { ShopContext } from "../Context/ShopContext"
+import Tittle from "../Components/Tittle";
+import { assets, products } from "../assets/assets";
+import Product from "./Product";
+import CartTotal from "../Components/CartTotal";
+
+
+export const Cart = () => {
+  const {products, currency, cartItems, updateQuantity, navigate} = useContext(ShopContext);
+  const [cartData,setCartData] = useState([]);
+
+  useEffect(()=>{
+    const TempData = [];
+    for(const items in cartItems){
+      for(const item in cartItems[items]){
+        if(cartItems[items][item] > 0){
+          TempData.push({
+            id: items,
+            size: item,
+            quantity: cartItems[items][item]
+          })
+        }
+      }
+    }
+    setCartData(TempData)
+  },[cartItems])
+  return (
+    <div className="border-t pt-14">
+      <div className="text-3xl ">
+        <Tittle text1={'YOUR'} text2={'CART'}/>
+      </div>
+
+      <div>
+        {
+          cartData.map((item,index)=>{
+            const productData = products.find((product)=> product.id == item.id);
+
+            return(
+              <div key={index} className=" grid border-t border-b border-gray-400 py-4 text-gray-700 grid-cols-[4fr_0.5fr_0.5fr] sm:grid-cols-[4fr_2fr_0.5fr] items-center gap-4">
+                <div className="flex items-start gap-6">
+                  <img className="w-15 sm:w-25" src={productData.image[0]} alt="" />
+                  <div>
+                    <p className="text-sm sm:text-lg font-medium">{productData.name}</p>
+                    <div className="flex items-center gap-5 mt-2">
+                      <p>{currency}{productData.price}</p>
+                      <p className="border px-2 sm:px-3  bg-slate-50">{item.size}</p>
+                    </div>
+                  </div>
+                </div>
+                <input onChange={(e)=> e.target.value === ''|| e.target.value === '0' ? null : updateQuantity(item.id,item.size,Number(e.target.value))} className="border max-w-10 sm:max-w-20 px-1 sm:px-2 py-1" type="number" min={1} defaultValue={item.quantity}/>
+                <img onClick={()=>updateQuantity(item.id,item.size,0)} className="w-4 mr-4 sm:w-5 cursor-pointer" src={assets.deleteIcon} alt="" />
+              </div>
+            )
+          })
+        }
+      </div>
+      <div className="flex justify-end my-20">
+        <div className="w-full sm:w-[450px]">
+          <CartTotal/>
+          <div className="text-end">
+            <button onClick={()=>navigate('/PlaceOrder')} className="bg-black text-white text-sm my-8 px-8 py-3">PROCEED TO CHECKOUT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+export default Cart
